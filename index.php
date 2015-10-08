@@ -1,5 +1,6 @@
 <?php
 mb_internal_encoding('UTF-8');
+date_default_timezone_set('Asia/Tokyo');
 $dir = '../../mailoutput';
 
 if (!empty($_POST['delete'])) {
@@ -33,13 +34,13 @@ foreach ($files as $file) {
 				list($field, $value) = explode(':', $line);
 				$field = strtolower(trim($field));
 				$value = trim($value);
-				if ($field == 'subject') {
+				if ($field == 'subject' || $field == 'from') {
 					mb_internal_encoding('ISO-2022-JP');
 					$value = mb_decode_mimeheader($value);
 					$value = mb_convert_encoding($value, 'UTF-8', 'ISO-2022-JP');
 					mb_internal_encoding('UTF-8');
 				}
-				$mail['headers'][$field] = $value;
+				$mail['headers'][$field] = htmlspecialchars($value);
 			} else {
 				$isBody = true;
 			}
@@ -83,16 +84,29 @@ $(document).ready(function() {
 			}
 		});
 	});
+	
+	$('#headersButton').click(function() {
+		$('#headers').toggle();
+	});
 });
 
 function showMail(filename) {
-	var body = '';
 	currentFilename = filename;
 	
 	$('#list tr').removeClass('active');
 	$('#tr' + filename).addClass('active');
 	
-	body += mails[filename].body;
+	var headers = '<table class="table table-condensed">';
+	for (var field in mails[filename].headers) {
+		headers += '<tr>';
+		headers += '<td>' + field + '</td>';
+		headers += '<td>' + mails[filename].headers[field] + '</td>';
+		headers += '</tr>';
+	}
+	headers += '</table>';
+	$('#headers').html(headers);
+	
+	var body = mails[filename].body;
 	body = body.replace(/\n/g, '<br />')
 	$('#mailbody').html(body);
 	$("html,body").animate({scrollTop:0});
@@ -118,10 +132,12 @@ function showMail(filename) {
     </div>
     <div id="main" class="col-xs-9">
     <div style="text-align:right;">
+    	<button class="btn" id="headersButton">Headers</button>
     	<button class="btn" id="deleteButton">Delete</button>
     </div>
+    <div id="headers" style="display:none;">
+    </div>
     <div id="mailbody">
-	    main
 	</div>
     </div>
   </div>
