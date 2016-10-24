@@ -27,7 +27,7 @@ foreach ($files as $file) {
 	);
 	foreach ($lines as $line) {
 		if ($isBody) {
-			$line = mb_convert_encoding($line, 'UTF-8', 'ISO-2022-JP');
+			$line = mb_convert_encoding($line, 'UTF-8', 'ISO-2022-JP,UTF-8');
 			$mail['body'] .= $line;
 		} else {
 			if ($line = trim($line)) {
